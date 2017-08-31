@@ -75,6 +75,7 @@ type Statsd struct {
 	// see https://github.com/influxdata/telegraf/pull/992
 	UDPPacketSize int `toml:"udp_packet_size"`
 
+	// Maximum socket buffer size in bytes.
 	ReadBufferSize  int
 
 	sync.Mutex
@@ -192,6 +193,12 @@ const sampleConfig = `
 
   ## Percentiles to calculate for timing & histogram stats
   percentiles = [90]
+
+  ## Maximum socket buffer size in bytes.
+  ## For stream sockets, once the buffer fills up, the sender will start backing up.
+  ## For datagram sockets, once the buffer fills up, metrics will start dropping.
+  ## Defaults to the OS default.
+  # read_buffer_size = 65535
 
   ## separator to use between elements of a statsd metric
   metric_separator = "_"
