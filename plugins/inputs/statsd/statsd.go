@@ -75,6 +75,8 @@ type Statsd struct {
 	// see https://github.com/influxdata/telegraf/pull/992
 	UDPPacketSize int `toml:"udp_packet_size"`
 
+	ReadBufferSize  int
+
 	sync.Mutex
 	// Lock for preventing a data race during resource cleanup
 	cleanup sync.Mutex
@@ -343,6 +345,12 @@ func (s *Statsd) tcpListen() error {
 		log.Fatalf("ERROR: ListenTCP - %s", err)
 		return err
 	}
+	if s.ReadBufferSize > 0 {
+		s.UDPlistener.SetReadBuffer(s.ReadBufferSize)
+		log.Println("I! Statsd TCP listener read buffer set to: ", s.ReadBufferSize)
+	} else {
+		log.Println("I! Statsd TCP listener is using system default read buffer size.")
+	}
 	log.Println("I! TCP Statsd listening on: ", s.TCPlistener.Addr().String())
 	for {
 		select {
@@ -380,6 +388,13 @@ func (s *Statsd) udpListen() error {
 	if err != nil {
 		log.Fatalf("ERROR: ListenUDP - %s", err)
 	}
+	if s.ReadBufferSize > 0 {
+		s.UDPlistener.SetReadBuffer(s.ReadBufferSize)
+		log.Println("I! Statsd UDP listener read buffer set to: ", s.ReadBufferSize)
+	} else {
+		log.Println("I! Statsd UDP listener is using system default read buffer size.")
+	}
+
 	log.Println("I! Statsd UDP listener listening on: ", s.UDPlistener.LocalAddr().String())
 
 	buf := make([]byte, UDP_MAX_PACKET_SIZE)
